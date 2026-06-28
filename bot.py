@@ -34,14 +34,14 @@ async def check_gift(message: Message):
     gift_id = extract_gift_id(message.text.strip())
 
     wait = await message.answer(
-        "🔍 در حال دریافت اطلاعات..."
+        f"🔍 در حال دریافت اطلاعات...\n<code>ID: {gift_id}</code>"
     )
 
     data = await gift_api.get_gift(gift_id)
 
     if not data:
         await wait.edit_text(
-            "❌ اطلاعاتی پیدا نشد."
+            f"❌ اطلاعاتی پیدا نشد.\n<code>ID: {gift_id}</code>"
         )
         return
 
