@@ -22,12 +22,13 @@ class GiftAPI:
                     logger.info(f"GET {url} -> {resp.status}")
 
                     if resp.status != 200:
-                        text = await resp.text()
-                        logger.error(f"Error response: {text[:200]}")
                         return None
 
                     try:
-                        return await resp.json(content_type=None)
+                        data = await resp.json(content_type=None)
+                        logger.info(f"RESPONSE KEYS: {list(data.keys()) if isinstance(data, dict) else type(data)}")
+                        logger.info(f"RESPONSE: {str(data)[:500]}")
+                        return data
                     except Exception as e:
                         logger.error(f"JSON parse error: {e}")
                         return None
@@ -37,11 +38,9 @@ class GiftAPI:
             return None
 
     async def get_gift(self, gift_name: str, gift_number: str = None):
-        # اول با slug کامل تست می‌کنیم
         data = await self.request(f"/gift/{gift_name}")
         if data:
             return data
-        # اگر نشد، با عدد تست می‌کنیم
         if gift_number:
             data = await self.request(f"/gift/{gift_number}")
             if data:
@@ -53,11 +52,6 @@ gift_api = GiftAPI()
 
 
 def extract_gift_id(text: str):
-    """
-    از لینک t.me/nft/CloverPin-70441
-    اسم gift و عدد رو جدا می‌کنه
-    returns: (gift_name, gift_number) مثل ("CloverPin", "70441")
-    """
     text = text.strip()
 
     slug = text
@@ -66,9 +60,11 @@ def extract_gift_id(text: str):
             slug = text.split(prefix)[-1]
             break
 
-    # جدا کردن اسم و عدد: CloverPin-70441 -> ("CloverPin", "70441")
     match = re.match(r'^([A-Za-z]+(?:[A-Z][a-z]*)*)-(\d+)$', slug)
     if match:
         return match.group(1), match.group(2)
 
     return slug, None
+
+
+gift_api = GiftAPI()
