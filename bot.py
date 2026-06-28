@@ -37,19 +37,17 @@ async def gift(update: Update, context: ContextTypes.DEFAULT_TYPE):
             name = data.get("name", gift_name)
             rarity = data.get("rarity", "نامشخص")
             await update.message.reply_text(
-                f"🎁 گیفت پیدا شد!\n\n"
-                f"نام: {name}\n"
-                f"نادر بودن: {rarity}%"
+                f"🎁 گیفت پیدا شد!\n\nنام: {name}\nنادر بودن: {rarity}%"
             )
         elif res.status_code == 404:
             await update.message.reply_text(f"❌ گیفت «{gift_name}» پیدا نشد.")
         else:
-            await update.message.reply_text("⚠️ خطا در دریافت اطلاعات. دوباره تلاش کنید.")
+            await update.message.reply_text("⚠️ خطا در دریافت اطلاعات.")
 
     except httpx.TimeoutException:
-        await update.message.reply_text("⏱ سرور پاسخ نداد. دوباره تلاش کنید.")
+        await update.message.reply_text("⏱ سرور پاسخ نداد.")
     except Exception as e:
-        logger.error(f"Error in gift command: {e}")
+        logger.error(f"Error: {e}")
         await update.message.reply_text("❌ خطایی رخ داد.")
 
 
