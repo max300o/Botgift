@@ -2,6 +2,7 @@ import aiohttp
 from aiohttp import ClientTimeout
 from config import API_BASE, HEADERS
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -35,30 +36,39 @@ class GiftAPI:
             logger.error(f"Request failed: {e}")
             return None
 
-    async def get_gift(self, gift_id: str):
-        return await self.request(f"/gift/{gift_id}")
-
-    async def get_backdrops(self):
-        return await self.request("/backdrops")
-
-    async def get_models(self):
-        return await self.request("/models")
-
-    async def get_symbols(self):
-        return await self.request("/symbols")
-
-    async def get_colors(self):
-        return await self.request("/colors")
+    async def get_gift(self, gift_name: str, gift_number: str = None):
+        # اول با slug کامل تست می‌کنیم
+        data = await self.request(f"/gift/{gift_name}")
+        if data:
+            return data
+        # اگر نشد، با عدد تست می‌کنیم
+        if gift_number:
+            data = await self.request(f"/gift/{gift_number}")
+            if data:
+                return data
+        return None
 
 
 gift_api = GiftAPI()
 
 
 def extract_gift_id(text: str):
+    """
+    از لینک t.me/nft/CloverPin-70441
+    اسم gift و عدد رو جدا می‌کنه
+    returns: (gift_name, gift_number) مثل ("CloverPin", "70441")
+    """
     text = text.strip()
 
+    slug = text
     for prefix in ["https://t.me/nft/", "http://t.me/nft/", "t.me/nft/"]:
         if prefix in text:
-            return text.split(prefix)[-1]
+            slug = text.split(prefix)[-1]
+            break
 
-    return text
+    # جدا کردن اسم و عدد: CloverPin-70441 -> ("CloverPin", "70441")
+    match = re.match(r'^([A-Za-z]+(?:[A-Z][a-z]*)*)-(\d+)$', slug)
+    if match:
+        return match.group(1), match.group(2)
+
+    return slug, None
