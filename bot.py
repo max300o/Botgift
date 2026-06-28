@@ -96,9 +96,6 @@ async def check_gift(message: Message):
                 f"👤 {html.escape(str(buyer))}"
             )
 
-========================
-⬇️ ادامه را دقیقاً از اینجا بچسبان
-========================
     markets = info.get("markets") or []
 
     if markets:
