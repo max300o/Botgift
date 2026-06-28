@@ -1,5 +1,6 @@
 import asyncio
 import html
+import logging
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
@@ -8,6 +9,8 @@ from aiogram.types import Message
 
 from config import BOT_TOKEN
 from api import gift_api, extract_gift_id
+
+logging.basicConfig(level=logging.INFO)
 
 bot = Bot(
     token=BOT_TOKEN,
@@ -48,10 +51,7 @@ async def check_gift(message: Message):
     info = data.get("gift", data)
 
     text = []
-
-    text.append(
-        "🎁 <b>Gift Information</b>\n"
-    )
+    text.append("🎁 <b>Gift Information</b>\n")
 
     fields = [
         ("Name", "name"),
@@ -67,30 +67,19 @@ async def check_gift(message: Message):
     ]
 
     for title, key in fields:
-
         value = info.get(key)
-
         if value is None:
             continue
-
-        text.append(
-            f"<b>{title}:</b> {html.escape(str(value))}"
-        )
+        text.append(f"<b>{title}:</b> {html.escape(str(value))}")
 
     sales = info.get("sales") or info.get("last_sales") or []
 
     if sales:
-
-        text.append(
-            "\n🛒 <b>Last Sales</b>"
-        )
-
+        text.append("\n🛒 <b>Last Sales</b>")
         for sale in sales[:5]:
-
             price = sale.get("price", "-")
             date = sale.get("date", "-")
             buyer = sale.get("buyer", "-")
-
             text.append(
                 f"• {price} TON | {date}\n"
                 f"👤 {html.escape(str(buyer))}"
@@ -99,20 +88,12 @@ async def check_gift(message: Message):
     markets = info.get("markets") or []
 
     if markets:
-
-        text.append(
-            "\n🌐 <b>Markets</b>"
-        )
-
+        text.append("\n🌐 <b>Markets</b>")
         for market in markets:
-
             name = market.get("name", "Market")
             url = market.get("url", "")
-
             if url:
-                text.append(
-                    f'• <a href="{url}">{html.escape(name)}</a>'
-                )
+                text.append(f'• <a href="{url}">{html.escape(name)}</a>')
 
     await wait.edit_text(
         "\n".join(text),
@@ -121,11 +102,8 @@ async def check_gift(message: Message):
 
 
 async def main():
-
     if not BOT_TOKEN:
-        raise RuntimeError(
-            "BOT_TOKEN not found in GitHub Secrets."
-        )
+        raise RuntimeError("BOT_TOKEN not found in GitHub Secrets.")
 
     await dp.start_polling(bot)
 
