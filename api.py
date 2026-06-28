@@ -1,6 +1,9 @@
 import aiohttp
 from aiohttp import ClientTimeout
 from config import API_BASE, HEADERS
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class GiftAPI:
@@ -12,16 +15,25 @@ class GiftAPI:
         url = f"{self.base}{endpoint}"
         timeout = ClientTimeout(total=30)
 
-        async with aiohttp.ClientSession(headers=HEADERS, timeout=timeout) as session:
-            async with session.get(url) as resp:
+        try:
+            async with aiohttp.ClientSession(headers=HEADERS, timeout=timeout) as session:
+                async with session.get(url) as resp:
+                    logger.info(f"GET {url} -> {resp.status}")
 
-                if resp.status != 200:
-                    return None
+                    if resp.status != 200:
+                        text = await resp.text()
+                        logger.error(f"Error response: {text[:200]}")
+                        return None
 
-                try:
-                    return await resp.json()
-                except:
-                    return None
+                    try:
+                        return await resp.json(content_type=None)
+                    except Exception as e:
+                        logger.error(f"JSON parse error: {e}")
+                        return None
+
+        except Exception as e:
+            logger.error(f"Request failed: {e}")
+            return None
 
     async def get_gift(self, gift_id: str):
         return await self.request(f"/gift/{gift_id}")
@@ -43,7 +55,6 @@ gift_api = GiftAPI()
 
 
 def extract_gift_id(text: str):
-
     text = text.strip()
 
     for prefix in ["https://t.me/nft/", "http://t.me/nft/", "t.me/nft/"]:
