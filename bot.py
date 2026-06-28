@@ -34,17 +34,17 @@ async def start(message: Message):
 @dp.message(F.text)
 async def check_gift(message: Message):
 
-    gift_id = extract_gift_id(message.text.strip())
+    gift_name, gift_number = extract_gift_id(message.text.strip())
 
     wait = await message.answer(
-        f"🔍 در حال دریافت اطلاعات...\n<code>ID: {gift_id}</code>"
+        f"🔍 در حال دریافت اطلاعات...\n<code>{gift_name}</code>"
     )
 
-    data = await gift_api.get_gift(gift_id)
+    data = await gift_api.get_gift(gift_name, gift_number)
 
     if not data:
         await wait.edit_text(
-            f"❌ اطلاعاتی پیدا نشد.\n<code>ID: {gift_id}</code>"
+            f"❌ اطلاعاتی پیدا نشد.\n<code>{gift_name}</code>"
         )
         return
 
@@ -73,20 +73,15 @@ async def check_gift(message: Message):
         text.append(f"<b>{title}:</b> {html.escape(str(value))}")
 
     sales = info.get("sales") or info.get("last_sales") or []
-
     if sales:
         text.append("\n🛒 <b>Last Sales</b>")
         for sale in sales[:5]:
             price = sale.get("price", "-")
             date = sale.get("date", "-")
             buyer = sale.get("buyer", "-")
-            text.append(
-                f"• {price} TON | {date}\n"
-                f"👤 {html.escape(str(buyer))}"
-            )
+            text.append(f"• {price} TON | {date}\n👤 {html.escape(str(buyer))}")
 
     markets = info.get("markets") or []
-
     if markets:
         text.append("\n🌐 <b>Markets</b>")
         for market in markets:
@@ -104,7 +99,6 @@ async def check_gift(message: Message):
 async def main():
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN not found in GitHub Secrets.")
-
     await dp.start_polling(bot)
 
 
