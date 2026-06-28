@@ -1,4 +1,5 @@
 import aiohttp
+from aiohttp import ClientTimeout
 from config import API_BASE, HEADERS
 
 
@@ -9,9 +10,10 @@ class GiftAPI:
 
     async def request(self, endpoint: str):
         url = f"{self.base}{endpoint}"
+        timeout = ClientTimeout(total=30)
 
-        async with aiohttp.ClientSession(headers=HEADERS) as session:
-            async with session.get(url, timeout=30) as resp:
+        async with aiohttp.ClientSession(headers=HEADERS, timeout=timeout) as session:
+            async with session.get(url) as resp:
 
                 if resp.status != 200:
                     return None
@@ -44,10 +46,8 @@ def extract_gift_id(text: str):
 
     text = text.strip()
 
-    if "https://t.me/nft/" in text:
-        return text.split("/")[-1]
-
-    if "t.me/nft/" in text:
-        return text.split("/")[-1]
+    for prefix in ["https://t.me/nft/", "http://t.me/nft/", "t.me/nft/"]:
+        if prefix in text:
+            return text.split(prefix)[-1]
 
     return text
