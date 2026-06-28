@@ -36,64 +36,52 @@ async def check_gift(message: Message):
 
     gift_name, gift_number = extract_gift_id(message.text.strip())
 
-    wait = await message.answer(
-        f"🔍 در حال دریافت اطلاعات...\n<code>{gift_name}</code>"
-    )
+    wait = await message.answer("🔍 در حال دریافت اطلاعات...")
 
     data = await gift_api.get_gift(gift_name, gift_number)
 
     if not data:
-        await wait.edit_text(
-            f"❌ اطلاعاتی پیدا نشد.\n<code>{gift_name}</code>"
-        )
+        await wait.edit_text("❌ اطلاعاتی پیدا نشد.")
         return
 
-    info = data.get("gift", data)
+    gift = data.get("gift", {})
+    models = data.get("models", [])
+    backdrops = data.get("backdrops", [])
+    symbols = data.get("symbols", [])
 
-    text = []
-    text.append("🎁 <b>Gift Information</b>\n")
+    text = [f"🎁 <b>{html.escape(gift.get('name', gift_name))}</b>\n"]
 
-    fields = [
-        ("Name", "name"),
-        ("Number", "number"),
-        ("Model", "model"),
-        ("Color", "color"),
-        ("Backdrop", "backdrop"),
-        ("Symbol", "symbol"),
-        ("Rarity", "rarity"),
-        ("Supply", "supply"),
-        ("Floor", "floor"),
-        ("Owner", "owner"),
-    ]
+    # مدل‌ها
+    if models:
+        text.append("🎨 <b>Models:</b>")
+        for m in models[:5]:
+            name = html.escape(str(m.get("name", "-")))
+            rarity = m.get("rarity", "-")
+            text.append(f"  • {name} — {rarity}%")
+        if len(models) > 5:
+            text.append(f"  <i>و {len(models) - 5} مدل دیگر...</i>")
 
-    for title, key in fields:
-        value = info.get(key)
-        if value is None:
-            continue
-        text.append(f"<b>{title}:</b> {html.escape(str(value))}")
+    # بک‌دراپ‌ها
+    if backdrops:
+        text.append("\n🖼 <b>Backdrops:</b>")
+        for b in backdrops[:5]:
+            name = html.escape(str(b.get("name", "-")))
+            rarity = b.get("rarity", "-")
+            text.append(f"  • {name} — {rarity}%")
+        if len(backdrops) > 5:
+            text.append(f"  <i>و {len(backdrops) - 5} بک‌درآپ دیگر...</i>")
 
-    sales = info.get("sales") or info.get("last_sales") or []
-    if sales:
-        text.append("\n🛒 <b>Last Sales</b>")
-        for sale in sales[:5]:
-            price = sale.get("price", "-")
-            date = sale.get("date", "-")
-            buyer = sale.get("buyer", "-")
-            text.append(f"• {price} TON | {date}\n👤 {html.escape(str(buyer))}")
+    # سیمبل‌ها
+    if symbols:
+        text.append("\n✨ <b>Symbols:</b>")
+        for s in symbols[:5]:
+            name = html.escape(str(s.get("name", "-")))
+            rarity = s.get("rarity", "-")
+            text.append(f"  • {name} — {rarity}%")
+        if len(symbols) > 5:
+            text.append(f"  <i>و {len(symbols) - 5} سیمبل دیگر...</i>")
 
-    markets = info.get("markets") or []
-    if markets:
-        text.append("\n🌐 <b>Markets</b>")
-        for market in markets:
-            name = market.get("name", "Market")
-            url = market.get("url", "")
-            if url:
-                text.append(f'• <a href="{url}">{html.escape(name)}</a>')
-
-    await wait.edit_text(
-        "\n".join(text),
-        disable_web_page_preview=True
-    )
+    await wait.edit_text("\n".join(text), disable_web_page_preview=True)
 
 
 async def main():
