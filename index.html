@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#1a1a2e;color:#eee;display:flex;align-items:center;justify-content:center;height:100vh;user-select:none}
+.card{background:#16213e;padding:18px 16px;border-radius:14px;text-align:center;width:270px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+h2{font-size:1.05rem;color:#e94560;margin-bottom:4px}
+.sub{font-size:.75rem;color:#8899aa;margin-bottom:12px}
+input{width:76px;padding:7px;font-size:1.1rem;text-align:center;border:2px solid #533483;border-radius:8px;background:#0f3460;color:#fff;outline:none}
+button{margin-top:10px;padding:9px 22px;font-size:.95rem;cursor:pointer;background:#e94560;color:#fff;border:none;border-radius:8px;font-weight:700;transition:transform .1s,background .2s}
+button:active{transform:scale(.96);background:#c73650}
+button:disabled{opacity:.45;cursor:not-allowed}
+#msg{margin-top:12px;min-height:2.4em;font-size:.85rem;line-height:1.4;color:#dde}
+#att{font-size:.72rem;color:#778;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="card">
+<h2>🔢 حدس عدد</h2>
+<div class="sub">عددی بین ۱ تا ۱۰۰ حدس بزن</div>
+<input type="number" id="inp" min="1" max="100" placeholder="عدد" inputmode="numeric">
+<br>
+<button id="btn">حدس بزن</button>
+<div id="msg"></div>
+<div id="att"></div>
+</div>
+<script>
+(function(){
+  var s=Math.floor(Math.random()*100)+1,
+      n=0,
+      inp=document.getElementById('inp'),
+      btn=document.getElementById('btn'),
+      msg=document.getElementById('msg'),
+      att=document.getElementById('att');
+
+  function check(){
+    var v=parseInt(inp.value,10);
+    if(isNaN(v)||v<1||v>100){msg.textContent='❌ لطفاً عددی بین ۱ تا ۱۰۰ وارد کنید.';return;}
+    n++;
+    att.textContent='تلاش: '+n;
+    if(v===s){
+      msg.innerHTML='🎉 آفرین! عدد <b>'+s+'</b> را در '+n+' تلاش حدس زدی.';
+      btn.disabled=true;
+      inp.disabled=true;
+    }else if(v<s){
+      msg.textContent='⬆️ عدد بزرگ‌تری انتخاب کن.';
+    }else{
+      msg.textContent='⬇️ عدد کوچک‌تری انتخاب کن.';
+    }
+    inp.value='';
+    inp.focus();
+  }
+
+  btn.addEventListener('click',check);
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+})();
+</script>
+</body>
+</html>
